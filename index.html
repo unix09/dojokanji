@@ -1,6 +1,32 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+  <script>
+  (function() {
+    // Alamat link utama dan cadangan Anda
+    const NETLIFY_URL = "https://dojokanji.netlify.app"; // Sesuaikan jika nama situs Netlify Anda berbeda
+    const GITHUB_URL  = "https://unix09.github.io/dojokanji/";
+
+    // 1. Cek apakah pengguna saat ini sedang membuka lewat Netlify
+    if (window.location.hostname.includes("netlify.app")) {
+      
+      // 2. Lakukan tes (ping) ke file index ini sendiri untuk mengecek status server
+      fetch(window.location.href, { method: 'HEAD', cache: 'no-store' })
+        .then(response => {
+          // Jika server merespons dengan status error (seperti 402 Payment Required atau 502)
+          // Berarti kuota bandwidth Netlify Anda sudah habis atau ditangguhkan
+          if (response.status >= 400) {
+            window.location.replace(GITHUB_URL);
+          }
+        })
+        .catch(error => {
+          // Jika koneksi gagal total/server tidak merespons sama sekali, langsung lempar ke GitHub
+          window.location.replace(GITHUB_URL);
+        });
+    }
+  })();
+  </script>
+  
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#1a1a2e">
