@@ -102,23 +102,44 @@ function goToGroups() {
 function goToStories() {
   go('s-stories');
 }
-
 /**
- * Fungsi go(): Screen navigation - Core navigation function
- * Menampilkan screen dengan ID yang diinginkan
- * @param {string} screenId - ID screen yang ingin ditampilkan
+ * Fungsi go(): Mengubah screen dan mencatat riwayat ke browser
+ * Ini mencegah tombol back HP langsung melompat ke beranda/keluar aplikasi
  */
 function go(screenId) {
   const screens = document.querySelectorAll('.screen');
   screens.forEach(s => s.classList.remove('active'));
+  
   const target = document.getElementById(screenId);
-  if (target) target.classList.add('active');
+  if (target) {
+    target.classList.add('active');
+    
+    // CATATAN PENTING: Daftarkan perpindahan screen ke history browser
+    // Jadi saat tombol back HP ditekan, browser tahu harus mundur ke screen mana
+    history.pushState({ screenId: screenId }, '', `#${screenId}`);
+  }
 }
 
-// Placeholder untuk fungsi-fungsi lainnya
-// (selectMode, nextQuestion, toggleAllFuri, dll)
-
-</script>
+/**
+ * Handle ketika tombol BACK FISIK / GESTURE HP ditekan oleh user
+ */
+window.onpopstate = function(event) {
+  if (event.state && event.state.screenId) {
+    // Jika ada riwayat screen sebelumnya, tampilkan screen tersebut
+    const screens = document.querySelectorAll('.screen');
+    screens.forEach(s => s.classList.remove('active'));
+    
+    const target = document.getElementById(event.state.screenId);
+    if (target) target.classList.add('active');
+  } else {
+    // Jika riwayat habis, default kembali ke halaman utama daftar kanji
+    const screens = document.querySelectorAll('.screen');
+    screens.forEach(s => s.classList.remove('active'));
+    
+    const defaultScreen = document.getElementById('s-groups'); // Sesuaikan ID daftar kanji kamu
+    if (defaultScreen) defaultScreen.classList.add('active');
+  }
+};
 
 </body>
 </html>
