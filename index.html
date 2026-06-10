@@ -1901,39 +1901,65 @@ function handleBackNav(){
   // Tutup overlay PIN cerita jika terbuka
   const pinOverlay=document.getElementById("story-pin-overlay");
   if(pinOverlay&&pinOverlay.classList.contains("active")){closeStoryPin();return;}
+
   if(cur==="s-quiz"){
+    // Saat di kuis (termasuk saat result muncul di dalam s-quiz):
+    // Konfirmasi keluar → kembali ke folder (s-groups), BUKAN beranda
     showConfirmPopup(
       "Keluar Kuis?",
       "Progres kuis saat ini akan hilang.",
       ()=>{
         navStack.pop();
-        go("s-groups",false);
+        // Kembali ke folder grup, bukan beranda
+        if(curFolder){
+          openFolder(curFolder);
+        } else {
+          renderKanjiTab();
+        }
       }
     );
     pushNav({screen:"s-quiz",idx:navStack.length-1});
+
   } else if(cur==="s-mode"){
+    // Dari pilih mode → kembali ke daftar grup (s-groups)
     navStack.pop();
     go("s-groups",false);
     pushNav({screen:"s-groups",idx:navStack.length-1});
+
   } else if(cur==="s-groups"){
+    // Dari daftar grup/sub-folder → kembali ke Tab Daftar Kanji
     navStack.pop();
-    renderMenu(); // re-render menu agar progres real-time ter-update
+    renderKanjiTab();
+
   } else if(cur==="s-difficult"){
+    // Dari layar kanji sulit → kembali ke Tab Daftar Kanji
     navStack.pop();
-    renderMenu();
+    renderKanjiTab();
+
   } else if(cur==="s-stories"){
+    // Dari daftar cerita → kembali ke Tab Daftar Kanji
     navStack.pop();
-    renderMenu();
+    renderKanjiTab();
+
   } else if(cur==="s-story-read"){
+    // Dari baca cerita → kembali ke daftar cerita
     navStack.pop();
+    document.querySelectorAll(".tab-item").forEach(t=>t.classList.remove("active"));
+    const tc=document.getElementById("tab-cerita");if(tc)tc.classList.add("active");
     go("s-stories",false);
     pushNav({screen:"s-stories",idx:navStack.length-1});
+
+  } else if(cur==="s-kanji-tab"||cur==="s-beranda"){
+    // Sudah di root tab — tidak perlu back lagi
+    // (jangan keluar ke login)
+
   } else if(cur==="s-menu"){
+    // Legacy — arahkan ke beranda
     navStack=[];
     go("s-login",false);
     pushNav({screen:"s-login",idx:0});
-    // Tampilkan kembali hint autologin di layar PIN
     setupAutologin();
+
   } else {
     try{history.back();}catch(e){}
   }
@@ -2310,7 +2336,16 @@ function renderResult(){
   if(!isDifficult){
     document.getElementById("r-mode").onclick=()=>go("s-mode");
   }
-  document.getElementById("r-home").onclick=()=>{isDifficult?renderKanjiTab():openFolder(curFolder);};
+  // Tombol "📂 Folder" / "📂 Menu" → selalu kembali ke folder yang relevan
+  document.getElementById("r-home").onclick=()=>{
+    if(isDifficult){
+      renderKanjiTab();
+    } else if(curFolder){
+      openFolder(curFolder); // kembali ke sub-folder grup yang sedang dikerjakan
+    } else {
+      renderKanjiTab();
+    }
+  };
 }
 
 // ========== CONFIRM POPUP (ganti confirm() native agar bekerja di WebView/APK) ==========
